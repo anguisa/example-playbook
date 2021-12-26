@@ -1,0 +1,21 @@
+node("docker"){
+    properties([parameters([booleanParam(defaultValue: true, name: 'prod_run')])])
+    stage("Git checkout"){
+        git credentialsId: 'Yandex', url: 'git@github.com:anguisa/example-playbook.git'
+    }
+    stage("Download role") {
+        sh 'ansible-galaxy install -r requirements.yml -p roles --force'
+    }
+    stage("Create folder for files") {
+        sh 'mkdir -p files/'
+    }
+    stage("Run playbook"){
+        if (params.prod_run) {
+            sh 'ansible-playbook site.yml -i inventory/prod.yml'
+        }
+        else {
+            sh 'ansible-playbook site.yml -i inventory/prod.yml --check --diff'
+        }
+
+    }
+}
